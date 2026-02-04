@@ -1,0 +1,23 @@
+name: Test Docker Image (Lint/Server Specs)
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - name: Run Serverspec tests
+        run: bundle exec rspec -f j -o tmp/rspec_results.json -f p
+      - name: RSpec Report
+        uses: SonicGarden/rspec-report-action@v6
+        with:
+          json-path: tmp/rspec_results.json
+        if: always()
